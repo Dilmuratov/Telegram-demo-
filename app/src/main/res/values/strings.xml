@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Telegram (demo)</string>
+    <string name="signing_window_text_1"><b>Sign in to Telegram</b>\nPlease confirm your country and\nenter your phone number</string>
+    <string name="verifying_window_text_1">We have sent you a message in Telegram\nwith the code.</string>
+    <string name="code">Code</string>
+    <string name="register_text_1">Enter your name and surname</string>
+
+</resources>

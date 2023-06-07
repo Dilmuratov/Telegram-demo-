@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "351659728361",
+    "project_id": "telegram-demo-c30d2",
+    "storage_bucket": "telegram-demo-c30d2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351659728361:android:110b1466f401af60d1ff78",
+        "android_client_info": {
+          "package_name": "com.example.telegramdemo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzZ9TjP-5JZpRzVzrghdCja9IT9Btw7JY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
