@@ -23,5 +23,8 @@
             app:destination="@id/mainFragment"
             app:popUpTo="@id/chatFragment"
             app:popUpToInclusive="true" />
+        <argument
+            android:name="groupPath"
+            app:argType="string" />
     </fragment>
 </navigation>

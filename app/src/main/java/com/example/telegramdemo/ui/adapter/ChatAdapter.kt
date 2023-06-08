@@ -13,9 +13,10 @@ class ChatAdapter : ListAdapter<ChatData, ChatAdapter.ChatViewHolder>(
         override fun areItemsTheSame(oldItem: ChatData, newItem: ChatData) = oldItem == newItem
 
         override fun areContentsTheSame(oldItem: ChatData, newItem: ChatData) =
-            oldItem.path == newItem.path &&
+            oldItem.groupPath == newItem.groupPath &&
                     oldItem.groupName == newItem.groupName &&
-                    oldItem.lastSms == newItem.lastSms
+                    oldItem.lastSms == newItem.lastSms &&
+                    oldItem.groupId == newItem.groupId
     }
 ) {
     inner class ChatViewHolder(private val binding: ItemChatBinding) :

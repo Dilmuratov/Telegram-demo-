@@ -1,8 +1,8 @@
 package com.example.telegramdemo.data.models
 
 data class MessageData(
-    val id: String,
+    val messageId: String,
     var message: String,
-    var username: String,
+    var userId: String,
     var time: String
 )

@@ -5,57 +5,84 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.telegramdemo.R
-import com.example.telegramdemo.data.models.ChatData
 import com.example.telegramdemo.databinding.FragmentMainBinding
+import com.example.telegramdemo.presentation.groupviewmodel.GroupsViewModel
 import com.example.telegramdemo.ui.adapter.ChatAdapter
-import com.example.telegramdemo.utils.getDeviceName
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainFragment : Fragment(R.layout.fragment_main) {
     lateinit var binding: FragmentMainBinding
+    private val groupsViewModel: GroupsViewModel by viewModel()
     private lateinit var pref: SharedPreferences
     private var adapter = ChatAdapter()
-    private var list = mutableListOf<ChatData>()
-    private lateinit var firestore: FirebaseFirestore
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentMainBinding.bind(view)
-        pref = (requireContext()).getSharedPreferences("myPref", Context.MODE_PRIVATE)
 
-        if (pref.getString("username", "").toString().isEmpty()) {
-            pref.edit().putString("username", getDeviceName()).apply()
-            Log.d("TTTT", pref.getString("username", "").toString())
+        checkUserIdOrCreateUserId()
+
+        initObservers()
+
+        initListeners()
+
+        refreshRecyclerView()
+
+    }
+
+    private fun checkUserIdOrCreateUserId() {
+        pref = (requireContext()).getSharedPreferences("pref", Context.MODE_PRIVATE)
+        var userId = pref.getString("userId", "")
+        if (userId == "") {
+            val currentTimeMillis = System.currentTimeMillis().toString()
+            pref.edit().putString("userId", currentTimeMillis).apply()
+            userId = pref.getString("userId", "")
         }
+        Log.d("TTTT", "UserId:\t" + userId.toString())
+    }
 
+    private fun initObservers() {
         binding.recyclerView.adapter = adapter
-        firestore = Firebase.firestore
-        firestore.collection("groups").get().addOnSuccessListener { result ->
-            for (document in result) {
-                val chatData = ChatData(
-                    path = document.id,
-                    groupName = document["name"].toString(),
-                    lastSms = document["lastSms"].toString()
-                )
-                list.add(chatData)
+
+        lifecycleScope.launch {
+            groupsViewModel.getAllGroupsLiveData.observe(requireActivity()) {
+                adapter.submitList(it)
             }
-            adapter.submitList(list)
         }
 
+        lifecycleScope.launch {
+            groupsViewModel.getAllGroups()
+        }
+
+        if (adapter.currentList.isEmpty()) {
+            Toast.makeText(requireContext(), "List is Empty", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun initListeners() {
         adapter.setOnItemClickListener { chatData ->
-            findNavController().navigate(R.id.action_mainFragment_to_chatFragment)
+            val bundle = Bundle()
+            bundle.putString("groupPath", chatData.groupPath)
+            findNavController().navigate(R.id.action_mainFragment_to_chatFragment, bundle)
             findNavController().popBackStack()
         }
-//
-//
-//
-//        binding.tvEnter.setOnClickListener {
-//            findNavController().navigate(R.id.action_mainFragment_to_chatFragment)
-//            findNavController().popBackStack()
-//        }
+    }
+
+    private fun refreshRecyclerView() {
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            binding.swipeRefreshLayout.isRefreshing = true
+
+            lifecycleScope.launch {
+                groupsViewModel.getAllGroups()
+            }
+
+            binding.swipeRefreshLayout.isRefreshing = false
+        }
     }
 }

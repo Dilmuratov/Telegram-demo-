@@ -1,5 +1,6 @@
 package com.example.telegramdemo.ui.adapter
 
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -9,19 +10,23 @@ import com.example.telegramdemo.R
 import com.example.telegramdemo.data.models.MessageData
 import com.example.telegramdemo.databinding.ItemMessageOtherBinding
 import com.example.telegramdemo.databinding.ItemMessageUserBinding
-import com.example.telegramdemo.utils.getDeviceName
+import com.example.telegramdemo.utils.App
 
-class MessageAdapter() :
+class MessageAdapter(private val userId: String) :
     ListAdapter<MessageData, ViewHolder>(object : DiffUtil.ItemCallback<MessageData>() {
         override fun areItemsTheSame(oldItem: MessageData, newItem: MessageData) =
             oldItem == newItem
 
         override fun areContentsTheSame(oldItem: MessageData, newItem: MessageData) =
-            oldItem.id == newItem.id && oldItem.username == newItem.username && oldItem.time == newItem.time && oldItem.message == newItem.message
+            oldItem.messageId == newItem.messageId &&
+                    oldItem.userId == newItem.userId &&
+                    oldItem.time == newItem.time &&
+                    oldItem.message == newItem.message
     }) {
 
     override fun getItemViewType(position: Int): Int {
-        return if (currentList[position].username == getDeviceName()) 1
+        return if (currentList[position].userId == userId
+        ) 1
         else 2
     }
 
@@ -64,7 +69,7 @@ class MessageAdapter() :
             val messageData = getItem(position)
             binding.tvMessage.text = messageData.message
             binding.tvTime.text = messageData.time
-            binding.tvUsername.text = messageData.username
+            binding.tvUsername.text = messageData.userId
         }
     }
 }

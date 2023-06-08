@@ -6,74 +6,68 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.telegramdemo.R
 import com.example.telegramdemo.data.models.MessageData
 import com.example.telegramdemo.databinding.FragmentChatBinding
+import com.example.telegramdemo.presentation.messageviewmodel.MessageViewModel
 import com.example.telegramdemo.ui.adapter.MessageAdapter
-import com.example.telegramdemo.utils.getDeviceName
 import com.example.telegramdemo.utils.toTimeFormat
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ChatFragment : Fragment(R.layout.fragment_chat) {
     private lateinit var binding: FragmentChatBinding
-    private var adapter = MessageAdapter()
-    private lateinit var database: FirebaseDatabase
+    private val messageViewModel: MessageViewModel by viewModel()
+    private lateinit var adapter: MessageAdapter
     private lateinit var pref: SharedPreferences
-    private var list = mutableListOf<MessageData>()
+    private lateinit var userId: String
+    private lateinit var groupPath: String
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentChatBinding.bind(view)
 
-        pref = requireContext().getSharedPreferences("myPref", Context.MODE_PRIVATE)
+        getUserId()
 
-        binding.recyclerView.adapter = adapter
-
-        database = Firebase.database
-
-        adapter.currentList.forEach {
-            Log.d(
-                "TTTT", "Message: ${it.username}\nBy: ${it.message}\nTime: ${it.time}\nID: ${it.id}"
-            )
-        }
+        initObservers()
 
         sendMessage()
 
-        getMessages()
+        refreshRecyclerView()
+
+        adapter.currentList.forEach {
+            Log.d(
+                "TTTT",
+                "Message: ${it.userId}\nBy: ${it.message}\nTime: ${it.time}\nID: ${it.messageId}"
+            )
+        }
     }
 
-    private fun getMessages() {
-        val myRef = database.getReference("group001")
-        myRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                try {
-                    list.clear()
-                    snapshot.children.forEach {
-                        val item = it.value as HashMap<*, *>
-                        list.add(
-                            MessageData(
-                                message = item["message"].toString(),
-                                time = item["time"].toString(),
-                                username = item["username"].toString(),
-                                id = item["id"].toString()
-                            )
-                        )
-                    }
-                    adapter.submitList(list)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Log.d("TTTT", "QATE")
-                }
-            }
+    private fun getUserId() {
+        pref = (requireContext()).getSharedPreferences("pref", Context.MODE_PRIVATE)
+        userId = pref.getString("userId", "").toString()
+        Log.d("TTTT", "UserId(ChatFragment): $userId")
+    }
 
-            override fun onCancelled(error: DatabaseError) {
-                Log.d("TTTT", "QATEEEEEEEEEE")
+    private fun initObservers() {
+        adapter = MessageAdapter(userId)
+
+        binding.recyclerView.adapter = adapter
+
+        lifecycleScope.launch {
+            messageViewModel.getAllMessagesLiveData.observe(requireActivity()) {
+                adapter.submitList(it)
             }
-        })
+        }
+
+        lifecycleScope.launch {
+            messageViewModel.getAllMessages()
+        }
+
+        groupPath = arguments?.getString("groupPath", "defaultValue1") ?: "defaultValue2"
+        Log.d("TTTT", "GroupPath(ChatFragment): $groupPath")
+
     }
 
     private fun sendMessage() {
@@ -82,19 +76,35 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
             if (message.isNotEmpty()) {
                 val currentTimeMillis = System.currentTimeMillis()
                 val messageData = MessageData(
-                    id = currentTimeMillis.toString(),
+                    messageId = currentTimeMillis.toString(),
                     message = message,
                     time = toTimeFormat(currentTimeMillis),
-                    username = pref.getString("username", getDeviceName()).toString()
+                    userId = userId
                 )
-                database.getReference("group001").child(currentTimeMillis.toString())
-                    .setValue(messageData)
-                    .addOnSuccessListener {
-                        binding.editText.setText("")
-                    }.addOnFailureListener {
-                        binding.editText.error = binding.editText.text.toString()
+                val result = lifecycleScope.launch {
+                    messageViewModel.addMessage(messageData)
+                }
+                if (result.isCompleted) {
+                    binding.editText.setText("")
+
+                    lifecycleScope.launch {
+                        messageViewModel.getAllMessages()
                     }
+                }
             }
+        }
+    }
+
+    private fun refreshRecyclerView() {
+
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            binding.swipeRefreshLayout.isRefreshing = true
+
+            lifecycleScope.launch {
+                messageViewModel.getAllMessages()
+            }
+
+            binding.swipeRefreshLayout.isRefreshing = false
         }
     }
 }
