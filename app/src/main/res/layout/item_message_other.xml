@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="2dp"
-        android:background="@color/white"
+        android:background="@drawable/bg_msg_other"
         android:padding="8dp"
         tools:ignore="SmallSp">
 

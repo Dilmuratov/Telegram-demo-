@@ -10,9 +10,13 @@
         android:label="MainFragment">
         <action
             android:id="@+id/action_mainFragment_to_chatFragment"
-            app:destination="@id/chatFragment"
-            app:popUpTo="@id/mainFragment"
-            app:popUpToInclusive="true" />
+            app:destination="@id/chatFragment"/>
+        <action
+            android:id="@+id/action_mainFragment_to_addGroupFragment"
+            app:destination="@id/addGroupFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_contactsFragment"
+            app:destination="@id/contactsFragment" />
     </fragment>
     <fragment
         android:id="@+id/chatFragment"
@@ -26,5 +30,29 @@
         <argument
             android:name="groupPath"
             app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/addGroupFragment"
+        android:name="com.example.telegramdemo.ui.AddGroupFragment"
+        android:label="AddGroupFragment" >
+        <action
+            android:id="@+id/action_addGroupFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpToInclusive="true"
+            app:popUpTo="@id/addGroupFragment"/>
+    </fragment>
+    <fragment
+        android:id="@+id/contactsFragment"
+        android:name="com.example.telegramdemo.ui.ContactsFragment"
+        android:label="ContactsFragment" >
+        <action
+            android:id="@+id/action_contactsFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_contactsFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
+        <action
+            android:id="@+id/action_contactsFragment_to_mainFragment2"
+            app:destination="@id/mainFragment" />
     </fragment>
 </navigation>

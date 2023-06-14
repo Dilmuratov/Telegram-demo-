@@ -5,7 +5,7 @@ import com.example.telegramdemo.domain.MessagesRepository
 
 class AddMessageUseCaseImpl(private val messagesRepository: MessagesRepository) :
     AddMessageUseCase {
-    override suspend fun execute(messageData: MessageData) {
-        messagesRepository.addMessage(messageData)
+    override suspend fun execute(messageData: MessageData, groupPath: String) {
+        messagesRepository.addMessage(messageData, groupPath)
     }
 }

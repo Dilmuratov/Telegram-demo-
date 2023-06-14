@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.flow
 class GetAllGroupsUseCaseImpl(private val groupsRepository: GroupsRepository) :
     GetAllGroupsUseCase {
     override suspend fun execute(): Flow<List<ChatData>> = flow {
-        groupsRepository.getAllGroups().collect() {
+        groupsRepository.getAllGroups().collect {
             emit(it)
         }
     }

@@ -8,8 +8,8 @@ abstract class MessageViewModel : ViewModel() {
 
     abstract val getAllMessagesLiveData: LiveData<List<MessageData>>
 
-    abstract suspend fun getAllMessages()
+    abstract suspend fun getAllMessages(groupPath: String)
 
-    abstract suspend fun addMessage(messageData: MessageData)
+    abstract suspend fun addMessage(messageData: MessageData, groupPath: String)
 
 }

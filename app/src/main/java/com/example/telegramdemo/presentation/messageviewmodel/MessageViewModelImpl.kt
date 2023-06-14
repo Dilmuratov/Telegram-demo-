@@ -14,13 +14,13 @@ class MessageViewModelImpl(
     private val _getAllMessagesLiveData = MutableLiveData<List<MessageData>>()
     override val getAllMessagesLiveData: LiveData<List<MessageData>> get() = _getAllMessagesLiveData
 
-    override suspend fun getAllMessages() {
-        getAllMessagesUseCase.execute().collect() {
+    override suspend fun getAllMessages(groupPath: String) {
+        getAllMessagesUseCase.execute(groupPath).collect() {
             _getAllMessagesLiveData.value = it
         }
     }
 
-    override suspend fun addMessage(messageData: MessageData) {
-        addMessageUseCase.execute(messageData)
+    override suspend fun addMessage(messageData: MessageData, groupPath: String) {
+        addMessageUseCase.execute(messageData, groupPath)
     }
 }

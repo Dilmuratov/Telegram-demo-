@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.flow
 
 class GetAllMessagesUseCaseImpl(private val messagesRepository: MessagesRepository) :
     GetAllMessagesUseCase {
-    override suspend fun execute(): Flow<List<MessageData>> = flow {
-        messagesRepository.getAllMessages().collect() {
+    override suspend fun execute(groupPath: String): Flow<List<MessageData>> = flow {
+        messagesRepository.getAllMessages(groupPath).collect {
             emit(it)
         }
     }

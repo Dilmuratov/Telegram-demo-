@@ -6,10 +6,12 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.telegramdemo.R
+import com.example.telegramdemo.data.models.ChatData
 import com.example.telegramdemo.databinding.FragmentMainBinding
 import com.example.telegramdemo.presentation.groupviewmodel.GroupsViewModel
 import com.example.telegramdemo.ui.adapter.ChatAdapter
@@ -38,12 +40,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun checkUserIdOrCreateUserId() {
         pref = (requireContext()).getSharedPreferences("pref", Context.MODE_PRIVATE)
         var userId = pref.getString("userId", "")
+        var username = pref.getString("username", "")
         if (userId == "") {
             val currentTimeMillis = System.currentTimeMillis().toString()
             pref.edit().putString("userId", currentTimeMillis).apply()
+            pref.edit().putString("username", currentTimeMillis).apply()
             userId = pref.getString("userId", "")
+            username = pref.getString("username", "")
         }
-        Log.d("TTTT", "UserId:\t" + userId.toString())
+        binding.tvUsername.text = username
+        Log.d("TTTT", "UserId:\t" + userId.toString() + "\nUsername:\t" + username.toString())
     }
 
     private fun initObservers() {
@@ -66,10 +72,38 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun initListeners() {
         adapter.setOnItemClickListener { chatData ->
-            val bundle = Bundle()
-            bundle.putString("groupPath", chatData.groupPath)
-            findNavController().navigate(R.id.action_mainFragment_to_chatFragment, bundle)
-            findNavController().popBackStack()
+            val result = lifecycleScope.launch {
+                groupsViewModel.updateGroup(
+                    ChatData(
+                        groupId = chatData.groupId,
+                        groupPath = chatData.groupPath,
+                        groupName = chatData.groupName,
+                        lastSms = chatData.lastSms
+                    )
+                )
+            }
+            if (result.isCompleted) {
+                val bundle = Bundle()
+                bundle.putString("groupId", chatData.groupId)
+                bundle.putString("groupPath", chatData.groupPath)
+                bundle.putString("groupName", chatData.groupName)
+                findNavController().navigate(R.id.action_mainFragment_to_chatFragment, bundle)
+            } else {
+                Toast.makeText(requireContext(), "Please try again later", Toast.LENGTH_SHORT)
+                    .show()
+            }
+        }
+
+        binding.ivMenu.setOnClickListener {
+            binding.drawer.openDrawer(GravityCompat.START)
+        }
+
+        binding.tvAddGroup.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_addGroupFragment)
+        }
+
+        binding.tvContacts.setOnClickListener {
+            findNavController().navigate(R.id.action_mainFragment_to_contactsFragment)
         }
     }
 

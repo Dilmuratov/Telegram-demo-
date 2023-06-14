@@ -12,4 +12,5 @@
     <color name="official_color_dark">#1C1C1E</color>
     <color name="official_color_blue">#0088cc</color>
     <color name="bg_color_msg_user">#E7FECC</color>
+    <color name="official_color_blue_dark">#17212B</color>
 </resources>
